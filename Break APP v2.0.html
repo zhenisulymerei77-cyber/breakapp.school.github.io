@@ -1,0 +1,1404 @@
+<!doctype html>
+<html lang="kk" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Break App</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;700&amp;family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      height: 100%;
+    }
+    body {
+      margin: 0;
+      font-family: "Nunito", sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.35), transparent 18%),
+        radial-gradient(circle at 80% 15%, rgba(255,255,255,0.28), transparent 14%),
+        radial-gradient(circle at 15% 85%, rgba(255,255,255,0.25), transparent 16%),
+        linear-gradient(180deg, #FFF3B8 0%, #FFD166 45%, #FFB703 100%);
+    }
+    .bubble {
+      position: absolute;
+      border-radius: 9999px;
+      background: rgba(255,255,255,0.22);
+      filter: blur(1px);
+      animation: floaty 7s ease-in-out infinite;
+    }
+    .bubble:nth-child(2) { animation-delay: -2s; }
+    .bubble:nth-child(3) { animation-delay: -4s; }
+    .bubble:nth-child(4) { animation-delay: -1s; }
+    @keyframes floaty {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-10px) scale(1.04); }
+    }
+    .card-pop {
+      animation: popin 0.5s ease both;
+    }
+    @keyframes popin {
+      from { opacity: 0; transform: translateY(18px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .screen {
+      display: none;
+    }
+    .screen.active {
+      display: block;
+    }
+    .qr-grid {
+      background-image:
+        linear-gradient(90deg, #1f2937 12%, transparent 12%, transparent 24%, #1f2937 24%, #1f2937 36%, transparent 36%, transparent 48%, #1f2937 48%, #1f2937 60%, transparent 60%, transparent 72%, #1f2937 72%, #1f2937 84%, transparent 84%),
+        linear-gradient(#1f2937 12%, transparent 12%, transparent 24%, #1f2937 24%, #1f2937 36%, transparent 36%, transparent 48%, #1f2937 48%, #1f2937 60%, transparent 60%, transparent 72%, #1f2937 72%, #1f2937 84%, transparent 84%);
+      background-size: 24px 24px;
+      background-position: 0 0, 0 0;
+    }
+    .focus-ring:focus-visible {
+      outline: 3px solid #ffffff;
+      outline-offset: 3px;
+    }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <style>
+   .spin-wheel-modal {
+     position: fixed;
+     top: 0;
+     left: 0;
+     right: 0;
+     bottom: 0;
+     background: rgba(0, 0, 0, 0.5);
+     display: none;
+     align-items: center;
+     justify-content: center;
+     z-index: 1000;
+     animation: fadeIn 0.3s ease;
+   }
+
+   .spin-wheel-modal.active {
+     display: flex;
+   }
+
+   @keyframes fadeIn {
+     from { opacity: 0; }
+     to { opacity: 1; }
+   }
+
+   .wheel-container {
+     position: relative;
+     width: 320px;
+     height: 320px;
+     margin: 0 auto;
+   }
+
+   .wheel {
+     width: 100%;
+     height: 100%;
+     border-radius: 50%;
+     background: conic-gradient(
+       from 0deg,
+       #FF6B6B 0deg 60deg,
+       #4ECDC4 60deg 120deg,
+       #FFE66D 120deg 180deg,
+       #95E1D3 180deg 240deg,
+       #C7CEEA 240deg 300deg,
+       #FF7B54 300deg 360deg
+     );
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     box-shadow: 0 10px 40px rgba(0,0,0,0.3), inset 0 0 40px rgba(0,0,0,0.1);
+     position: relative;
+   }
+
+   .wheel-segment {
+     position: absolute;
+     width: 100%;
+     height: 100%;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+   }
+
+   .wheel-label {
+     position: absolute;
+     width: 280px;
+     height: 280px;
+     display: flex;
+     align-items: center;
+     justify-content: flex-start;
+     padding-left: 20px;
+   }
+
+   .wheel-label span {
+     font-weight: bold;
+     font-size: 13px;
+     color: white;
+     text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+     writing-mode: horizontal-tb;
+     white-space: nowrap;
+   }
+
+   .wheel-pointer {
+     position: absolute;
+     top: -18px;
+     left: 50%;
+     transform: translateX(-50%);
+     width: 0;
+     height: 0;
+     border-left: 14px solid transparent;
+     border-right: 14px solid transparent;
+     border-top: 24px solid #1F2937;
+     z-index: 10;
+     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+   }
+
+   .wheel-center {
+     width: 50px;
+     height: 50px;
+     background: white;
+     border-radius: 50%;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     font-weight: bold;
+     font-size: 24px;
+     color: #1F2937;
+     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+     z-index: 5;
+   }
+
+   .spin-result {
+     margin-top: 20px;
+     text-align: center;
+     animation: slideUp 0.4s ease;
+   }
+
+   @keyframes slideUp {
+     from { opacity: 0; transform: translateY(10px); }
+     to { opacity: 1; transform: translateY(0); }
+   }
+ </style>
+ </head>
+ <body class="h-full">
+  <div id="app" class="relative h-full w-full overflow-auto text-slate-900">
+   <div class="pointer-events-none absolute inset-0 overflow-hidden">
+    <div class="bubble left-[8%] top-[10%] h-16 w-16"></div>
+    <div class="bubble right-[10%] top-[18%] h-24 w-24"></div>
+    <div class="bubble left-[12%] bottom-[22%] h-20 w-20"></div>
+    <div class="bubble right-[18%] bottom-[12%] h-14 w-14"></div>
+   </div>
+   <main class="relative mx-auto flex h-full w-full max-w-6xl flex-col px-4 py-5 sm:px-6 lg:px-8">
+    <div class="mb-3 flex items-center justify-between rounded-2xl bg-white/60 px-4 py-2 text-sm font-bold text-slate-700 shadow-sm backdrop-blur-sm">
+     <div class="flex items-center gap-2"><i data-lucide="clock" class="h-4 w-4"></i> <span id="current-time">12:30</span>
+     </div>
+     <div class="flex items-center gap-2"><i data-lucide="calendar" class="h-4 w-4"></i> <span id="current-date">Дүйсенбі</span>
+     </div>
+    </div>
+    <section id="menu-screen" class="screen active h-full">
+     <header class="mb-4 rounded-[28px] bg-white/75 p-5 shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur-md card-pop">
+      <div class="flex items-start justify-between gap-4">
+       <div>
+        <p class="mb-2 inline-flex items-center gap-2 rounded-full bg-[#FF7B54] px-3 py-1 text-sm font-bold text-white"><i data-lucide="sparkles" class="h-4 w-4"></i> <span id="user-type-label">Оқушыларға арналған</span></p>
+        <h1 id="app-title" class="font-['Comfortaa'] text-3xl font-bold sm:text-4xl">Break App</h1>
+        <p id="app-subtitle" class="mt-2 max-w-2xl text-sm font-semibold text-slate-700 sm:text-base">Мектеп асханасынан тез әрі ыңғайлы тапсырыс беріңіз</p>
+       </div>
+       <div class="hidden items-center gap-3 sm:flex">
+        <button id="role-toggle" class="rounded-2xl bg-[#4ECDC4] px-4 py-3 text-sm font-bold text-white transition hover:brightness-95"> <i data-lucide="switch-horizontal" class="mb-1 inline h-4 w-4"></i> Өзгерту </button><button id="profile-btn" class="focus-ring rounded-[24px] bg-[#FFD166] px-4 py-3 text-slate-900 shadow-lg transition hover:scale-105 flex items-center gap-2 font-bold"> <i data-lucide="user" class="h-5 w-5"></i> Профиль </button>
+       </div>
+      </div>
+     </header>
+     <div class="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+      <section class="rounded-[30px] bg-white/80 p-4 shadow-[0_16px_50px_rgba(0,0,0,0.13)] backdrop-blur-md card-pop">
+       <div class="mb-4 flex items-center justify-between">
+        <div>
+         <h2 id="menu-title" class="font-['Comfortaa'] text-2xl font-bold">Бүгінгі мәзір</h2>
+         <p class="text-sm font-semibold text-slate-600">Өзіңізге ұнаған тағамды таңдаңыз</p>
+        </div>
+        <div class="rounded-full bg-[#7C5CFC] px-3 py-2 text-sm font-bold text-white">
+         6 тағам
+        </div>
+       </div>
+       <div id="menu-list" class="grid gap-4 sm:grid-cols-2"></div>
+      </section>
+      <aside class="rounded-[30px] bg-[#1F2937] p-4 text-white shadow-[0_16px_50px_rgba(0,0,0,0.18)] card-pop lg:sticky lg:top-4">
+       <div class="mb-4 flex items-center gap-3">
+        <div class="rounded-2xl bg-white/10 p-3"><i data-lucide="shopping-basket" class="h-6 w-6"></i>
+        </div>
+        <div>
+         <h2 id="cart-title" class="font-['Comfortaa'] text-xl font-bold">Сіздің себетіңіз</h2>
+         <p class="text-sm text-white/70">Таңдаған тағамдарыңыз осында</p>
+        </div>
+       </div>
+       <div id="empty-cart" class="rounded-3xl border border-dashed border-white/25 bg-white/5 p-5 text-center">
+        <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-white/10"><i data-lucide="pizza" class="h-7 w-7"></i>
+        </div>
+        <p class="text-sm font-bold">Корзина әзірге бос</p>
+        <p class="mt-1 text-xs text-white/65">Сол жақтан тағам қосыңыз</p>
+       </div>
+       <div id="cart-items" class="space-y-3"></div>
+       <div id="coupon-section" class="mt-4 hidden rounded-3xl bg-white/10 p-4">
+        <p class="mb-3 text-xs font-bold text-white/80">Активті купон:</p>
+        <div id="active-coupon" class="rounded-2xl bg-[#4ECDC4] px-3 py-2 text-sm font-bold text-slate-900"><span id="coupon-text"></span> <button id="remove-coupon" class="ml-2 inline text-xs underline">Алып тастау</button>
+        </div>
+       </div>
+       <div class="mt-3 flex gap-2"><input id="coupon-input" type="text" placeholder="Купон кодын енгізіңіз" class="flex-1 rounded-2xl bg-white/15 px-3 py-2 text-sm text-white placeholder-white/50 focus-ring focus:outline-none"> <button id="apply-coupon-btn" class="focus-ring rounded-2xl bg-[#4ECDC4] px-4 py-2 text-sm font-bold text-slate-900 transition hover:brightness-95">Қосу</button>
+       </div>
+       <div class="mt-4 rounded-3xl bg-white/10 p-4">
+        <div class="flex items-center justify-between text-sm"><span class="text-white/70">Жалпы саны</span> <span id="total-count" class="font-extrabold">0</span>
+        </div>
+        <div id="subtotal-row" class="mt-2 flex items-center justify-between"><span class="text-base font-bold">Ішінара</span> <span id="subtotal-price" class="text-xl font-extrabold text-[#FFD166]">0 ₸</span>
+        </div>
+        <div id="discount-row" class="mt-2 hidden flex items-center justify-between"><span class="text-base font-bold">Ынамдылық (-<span id="discount-percent">0</span>%)</span> <span id="discount-amount" class="text-xl font-extrabold text-[#4ECDC4]">-0 ₸</span>
+        </div>
+        <div class="mt-3 border-t border-white/20 pt-3 flex items-center justify-between"><span class="text-base font-bold">Жалпы сома</span> <span id="total-price" class="text-2xl font-extrabold text-[#FFD166]">0 ₸</span>
+        </div>
+       </div><button id="order-btn" class="focus-ring mt-4 flex w-full items-center justify-center gap-2 rounded-3xl bg-[#FF7B54] px-5 py-4 text-base font-extrabold text-white shadow-[0_10px_25px_rgba(255,123,84,0.45)] transition hover:scale-[1.01] hover:bg-[#ff6a3e] disabled:cursor-not-allowed disabled:opacity-50"> <i data-lucide="qr-code"></i> <span id="order-button-text">Заказ беру</span> </button>
+       <p id="cart-message" class="mt-3 text-center text-sm text-[#FFD166]"></p>
+      </aside>
+     </div>
+    </section>
+    <section id="qr-screen" class="screen h-full">
+     <div class="mx-auto flex h-full w-full max-w-2xl flex-col items-center justify-center py-6">
+      <div class="w-full rounded-[34px] bg-white p-6 text-center shadow-[0_20px_60px_rgba(0,0,0,0.16)] card-pop sm:p-8">
+       <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#4ECDC4] text-white"><i data-lucide="check" class="h-8 w-8"></i>
+       </div>
+       <h2 id="qr-title" class="font-['Comfortaa'] text-2xl font-bold sm:text-3xl">Тапсырысыңыз дайын</h2>
+       <p class="mt-2 text-sm font-semibold text-slate-600">QR-кодты асхана қызметкеріне көрсетіңіз</p>
+       <div class="mx-auto mt-6 w-full max-w-[280px] rounded-[28px] bg-slate-100 p-4 shadow-inner">
+        <div id="qr-box" class="qr-grid relative aspect-square w-full rounded-2xl bg-white">
+         <div class="absolute left-3 top-3 h-16 w-16 rounded-md border-[10px] border-slate-800 bg-white"></div>
+         <div class="absolute right-3 top-3 h-16 w-16 rounded-md border-[10px] border-slate-800 bg-white"></div>
+         <div class="absolute left-3 bottom-3 h-16 w-16 rounded-md border-[10px] border-slate-800 bg-white"></div>
+         <div class="absolute inset-0 flex items-center justify-center">
+          <div class="rounded-xl bg-white/90 px-3 py-2 text-center shadow-md">
+           <p class="text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-500">Order ID</p>
+           <p id="order-id" class="text-lg font-extrabold text-slate-900">BRK-204</p>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="mt-5 rounded-3xl bg-[#FFF3B8] p-4 text-left">
+        <h3 class="mb-2 text-sm font-extrabold text-slate-800">Тапсырыс құрамы</h3>
+        <div id="final-items" class="space-y-2 text-sm text-slate-700"></div>
+        <div class="mt-3 flex items-center justify-between border-t border-slate-300 pt-3"><span class="font-bold text-slate-800">Жалпы сома</span> <span id="final-total" class="text-xl font-extrabold text-slate-900">0 ₸</span>
+        </div>
+       </div>
+       <p id="qr-note" class="mt-5 text-base font-extrabold text-[#FF7B54]">Мектеп асханасына көрсетіңіз</p><button id="back-btn" class="focus-ring mt-6 inline-flex items-center gap-2 rounded-2xl bg-[#7C5CFC] px-5 py-3 font-extrabold text-white transition hover:bg-[#6946f5]"> <i data-lucide="arrow-left"></i> Артқа қайту </button>
+      </div>
+     </div>
+    </section>
+    <section id="profile-screen" class="screen h-full">
+     <div class="flex h-full w-full flex-col overflow-auto py-6">
+      <div class="mb-4 px-4"><button id="profile-back-btn" class="focus-ring flex items-center gap-2 rounded-2xl bg-white/70 px-4 py-2 font-bold text-slate-900 transition hover:bg-white"> <i data-lucide="arrow-left" class="h-5 w-5"></i> Артқа </button>
+      </div>
+      <div class="mx-auto w-full max-w-2xl px-4 space-y-6">
+       <div class="rounded-[30px] bg-white/80 p-6 shadow-[0_16px_50px_rgba(0,0,0,0.13)] backdrop-blur-md card-pop">
+        <div class="flex items-center gap-4 mb-6">
+         <div class="rounded-full bg-gradient-to-br from-[#7C5CFC] to-[#FF7B54] w-20 h-20 flex items-center justify-center text-white text-3xl font-bold"><i data-lucide="user" class="h-10 w-10"></i>
+         </div>
+         <div>
+          <h2 id="profile-name" class="font-['Comfortaa'] text-3xl font-bold">Шерхан Ибрагимович</h2>
+          <p id="profile-id" class="text-sm text-slate-600 font-semibold">ID: user-001</p>
+         </div>
+        </div>
+        <div class="rounded-2xl bg-gradient-to-r from-[#FFD166] to-[#FFB703] p-4 text-slate-900 mb-4">
+         <p class="text-sm font-semibold mb-1">Теңгерім Шоты</p>
+         <p id="balance-display" class="text-3xl font-extrabold">0 ₸</p>
+        </div><button id="topup-btn" class="focus-ring w-full rounded-2xl bg-[#4ECDC4] px-4 py-3 font-bold text-white transition hover:brightness-95 flex items-center justify-center gap-2"> <i data-lucide="plus-circle" class="h-5 w-5"></i> Толықтау </button>
+       </div>
+       <div class="rounded-[30px] bg-white/80 p-6 shadow-[0_16px_50px_rgba(0,0,0,0.13)] backdrop-blur-md card-pop">
+        <h3 class="font-['Comfortaa'] text-2xl font-bold mb-4 flex items-center gap-2"><i data-lucide="gift" class="h-6 w-6 text-[#FF7B54]"></i> Мои купоны</h3>
+        <div id="coupons-list" class="space-y-3"></div>
+        <p id="no-coupons-msg" class="text-sm text-slate-600 text-center py-6">Әзірге купондар жоқ</p>
+       </div>
+       <div class="rounded-[30px] bg-white/80 p-6 shadow-[0_16px_50px_rgba(0,0,0,0.13)] backdrop-blur-md card-pop pb-10">
+        <h3 class="font-['Comfortaa'] text-2xl font-bold mb-4 flex items-center gap-2"><i data-lucide="history" class="h-6 w-6 text-[#7C5CFC]"></i> Тапсырыс Құрылымы</h3>
+        <div id="orders-list" class="space-y-3"></div>
+        <p id="no-orders-msg" class="text-sm text-slate-600 text-center py-6">Әзірге тапсырыстар жоқ</p>
+       </div>
+      </div>
+     </div>
+    </section>
+   </main>
+   <div id="spin-wheel-modal" class="spin-wheel-modal">
+    <div class="rounded-[34px] bg-white p-8 shadow-2xl max-w-md w-full mx-4 relative"><button id="modal-close-btn" class="focus-ring absolute top-4 right-4 w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-900 hover:bg-slate-200 transition" aria-label="Модальді жабу"> <i data-lucide="x" class="h-6 w-6"></i> </button>
+     <h3 class="font-['Comfortaa'] text-2xl font-bold text-center mb-6">🎡 Өмірлік Рулетка</h3>
+     <div class="wheel-container">
+      <div class="wheel-pointer"></div>
+      <div id="wheel" class="wheel">
+       <div class="wheel-label" style="transform: rotate(0deg)">
+        <span>10%</span>
+       </div>
+       <div class="wheel-label" style="transform: rotate(60deg)">
+        <span>20%</span>
+       </div>
+       <div class="wheel-label" style="transform: rotate(120deg)">
+        <span>30%</span>
+       </div>
+       <div class="wheel-label" style="transform: rotate(180deg)">
+        <span>50₸</span>
+       </div>
+       <div class="wheel-label" style="transform: rotate(240deg)">
+        <span>100₸</span>
+       </div>
+       <div class="wheel-label" style="transform: rotate(300deg)">
+        <span>15%</span>
+       </div>
+       <div class="wheel-center">
+        <div class="text-center">
+         <div class="text-xs font-bold text-slate-900">
+          🎁
+         </div>
+         <div class="text-[10px] font-extrabold text-slate-900 leading-tight mt-0.5">
+          31 SCHOOL<br>
+           AKTAU
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+     <div id="spin-button-container" class="text-center mt-6">
+      <button id="spin-btn" class="focus-ring rounded-2xl bg-[#FF7B54] px-6 py-3 text-white font-extrabold transition hover:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed"> Айналдыру (1 попытка) </button>
+      <p id="spin-cooldown" class="text-sm text-slate-600 mt-2 hidden">Ертең қайта попытка жасаңыз 🕐</p>
+     </div>
+     <div id="spin-result" class="spin-result hidden">
+      <p id="result-text" class="text-lg font-bold text-slate-900 mb-3"></p>
+      <div id="coupon-code-box" class="bg-[#FFF3B8] rounded-2xl p-4 mb-4 hidden">
+       <p class="text-xs font-bold text-slate-700 mb-2">Сіздің купон коды:</p>
+       <p id="coupon-code" class="text-2xl font-extrabold text-[#FF7B54] font-mono"></p><button id="copy-coupon-btn" class="focus-ring mt-2 text-sm bg-slate-900 text-white px-3 py-1 rounded-lg hover:bg-slate-700"> Көшірмелеу </button>
+      </div><button id="close-modal-btn" class="focus-ring rounded-2xl bg-[#4ECDC4] px-6 py-2 text-white font-bold transition hover:brightness-95"> Жабу </button>
+     </div>
+    </div>
+   </div>
+   <div id="topup-modal" class="spin-wheel-modal">
+    <div class="rounded-[34px] bg-white p-8 shadow-2xl max-w-md w-full mx-4">
+     <div class="flex items-center justify-between mb-6">
+      <h3 class="font-['Comfortaa'] text-2xl font-bold">💳 Теңгерімді толықтау</h3><button id="topup-close-btn" class="focus-ring w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-900 hover:bg-slate-200 transition"> <i data-lucide="x" class="h-6 w-6"></i> </button>
+     </div>
+     <div class="space-y-4">
+      <div>
+       <label class="block text-sm font-bold text-slate-900 mb-2">Сумманы таңдаңыз</label>
+       <div class="grid grid-cols-3 gap-2">
+        <button class="topup-amount-btn focus-ring rounded-2xl bg-slate-100 py-3 font-bold text-slate-900 transition hover:bg-[#FFD166]" data-amount="5000">5000 ₸</button> <button class="topup-amount-btn focus-ring rounded-2xl bg-slate-100 py-3 font-bold text-slate-900 transition hover:bg-[#FFD166]" data-amount="10000">10000 ₸</button> <button class="topup-amount-btn focus-ring rounded-2xl bg-slate-100 py-3 font-bold text-slate-900 transition hover:bg-[#FFD166]" data-amount="20000">20000 ₸</button>
+       </div>
+      </div>
+      <div>
+       <label class="block text-sm font-bold text-slate-900 mb-2">Немесе басқа сумма</label> <input id="custom-amount" type="number" placeholder="Сумманы енгізіңіз" class="focus-ring w-full rounded-2xl bg-slate-100 px-4 py-3 text-slate-900 placeholder-slate-500 focus:outline-none">
+      </div>
+      <div id="topup-form" class="bg-slate-50 rounded-2xl p-4 space-y-3 border-2 border-slate-200">
+       <h4 class="font-bold text-slate-900 text-center mb-4">Карта ақпараты</h4>
+       <div>
+        <label class="text-xs font-bold text-slate-700 block mb-1">Карта нөмері</label> <input id="card-number" type="text" placeholder="1234 5678 9012 3456" maxlength="19" class="focus-ring w-full rounded-2xl bg-white px-4 py-2 text-slate-900 placeholder-slate-400 focus:outline-none">
+       </div>
+       <div class="grid grid-cols-2 gap-3">
+        <div>
+         <label class="text-xs font-bold text-slate-700 block mb-1">Ақ. салғанын</label> <input id="card-expiry" type="text" placeholder="MM/YY" maxlength="5" class="focus-ring w-full rounded-2xl bg-white px-4 py-2 text-slate-900 placeholder-slate-400 focus:outline-none">
+        </div>
+        <div>
+         <label class="text-xs font-bold text-slate-700 block mb-1">CVV</label> <input id="card-cvv" type="text" placeholder="123" maxlength="3" class="focus-ring w-full rounded-2xl bg-white px-4 py-2 text-slate-900 placeholder-slate-400 focus:outline-none">
+        </div>
+       </div>
+       <div>
+        <label class="text-xs font-bold text-slate-700 block mb-1">Аты-жөні</label> <input id="card-name" type="text" placeholder="ИВАНОВ И.И." class="focus-ring w-full rounded-2xl bg-white px-4 py-2 text-slate-900 placeholder-slate-400 focus:outline-none">
+       </div>
+      </div>
+      <div id="topup-message" class="text-sm text-center text-slate-600"></div><button id="confirm-topup-btn" class="focus-ring w-full rounded-2xl bg-[#4ECDC4] px-4 py-3 font-bold text-white transition hover:brightness-95">Толықтау</button>
+     </div>
+    </div>
+   </div><button id="daily-spin-btn" class="focus-ring fixed bottom-6 right-6 rounded-full bg-[#FFD166] w-16 h-16 flex items-center justify-center text-2xl shadow-lg hover:scale-110 transition z-50" title="Күндік рулетка"> 🎡 </button>
+  </div>
+  <script>
+    const defaultConfig = {
+      background_color: "#FFD166",
+      surface_color: "#FFFFFF",
+      text_color: "#0F172A",
+      primary_action_color: "#FF7B54",
+      secondary_action_color: "#7C5CFC",
+      font_family: "Comfortaa",
+      font_size: 16,
+      app_title: "Break App",
+      app_subtitle: "Мектеп асханасынан тез әрі ыңғайлы тапсырыс беріңіз",
+      menu_title: "Бүгінгі мәзір",
+      cart_title: "Сіздің себетіңіз",
+      order_button_text: "Заказ беру",
+      qr_title: "Тапсырысыңыз дайын",
+      qr_note: "Мектеп асханасына көрсетіңіз"
+    };
+
+    const menuItems = [
+      { id: "pizza", name: "Пицца", emoji: "🍕", price: 450, color: "#FFE0D2" },
+      { id: "burger", name: "Бургер", emoji: "🍔", price: 480, color: "#FDE68A" },
+      { id: "hotdog", name: "Хот-дог", emoji: "🌭", price: 350, color: "#FECACA" },
+      { id: "samsa", name: "Самса", emoji: "🥟", price: 250, color: "#DDD6FE" },
+      { id: "cola", name: "Кола", emoji: "🥤", price: 200, color: "#BFDBFE" },
+      { id: "donut", name: "Пончик", emoji: "🍩", price: 180, color: "#FBCFE8" }
+    ];
+
+    const teacherMenuItems = [
+      {
+        id: "combo1",
+        name: "Ас комбосы №1",
+        emoji: "🍽️",
+        price: 1200,
+        color: "#FFE0D2",
+        main: { id: "main1", name: "Котлет", emoji: "🍖" },
+        sides: [
+          { id: "side1a", name: "Пюре", emoji: "🥔" },
+          { id: "side1b", name: "Макарон", emoji: "🍝" },
+          { id: "side1c", name: "Рис", emoji: "🍚" }
+        ],
+        drinks: [
+          { id: "drink1a", name: "Компот", emoji: "🍷" },
+          { id: "drink1b", name: "Су", emoji: "💧" }
+        ]
+      },
+      {
+        id: "combo2",
+        name: "Ас комбосы №2",
+        emoji: "🍽️",
+        price: 1350,
+        color: "#DDD6FE",
+        main: { id: "main2", name: "Балық", emoji: "🐟" },
+        sides: [
+          { id: "side2a", name: "Пюре", emoji: "🥔" },
+          { id: "side2b", name: "Салат", emoji: "🥗" }
+        ],
+        drinks: [
+          { id: "drink2a", name: "Компот", emoji: "🍷" },
+          { id: "drink2b", name: "Су", emoji: "💧" }
+        ]
+      },
+      {
+        id: "combo3",
+        name: "Ас комбосы №3",
+        emoji: "🍽️",
+        price: 1100,
+        color: "#FBCFE8",
+        main: { id: "main3", name: "Тамақтау", emoji: "🍗" },
+        sides: [
+          { id: "side3a", name: "Макарон", emoji: "🍝" },
+          { id: "side3b", name: "Кешек", emoji: "🍆" }
+        ],
+        drinks: [
+          { id: "drink3a", name: "Компот", emoji: "🍷" }
+        ]
+      }
+    ];
+
+    const coupons = {
+      "GRADES500": { minAmount: 500, discount: 10, label: "Үлгерім 500₸+" },
+      "GRADES1000": { minAmount: 1000, discount: 10, label: "Үлгерім 1000₸+" }
+    };
+
+    const state = {
+      cart: {},
+      orderCounter: 203,
+      userRole: "student",
+      teacherComboSelections: {},
+      appliedCoupon: null,
+      userId: "user-" + Math.random().toString(36).substr(2, 9),
+      lastSpinDate: null,
+      studentName: "Сатжан Алихан",
+      balance: 0,
+      wheelSpinData: [
+        { label: "10% ынамдылық", discount: 10, color: "#FF6B6B" },
+        { label: "20% ынамдылық", discount: 20, color: "#4ECDC4" },
+        { label: "30% ынамдылық", discount: 30, color: "#FFE66D" },
+        { label: "50₸ ынамдылық", discount: -50, color: "#95E1D3" },
+        { label: "100₸ ынамдылық", discount: -100, color: "#C7CEEA" },
+        { label: "15% ынамдылық", discount: 15, color: "#FF7B54" }
+      ]
+    };
+
+    const els = {};
+
+    function formatPrice(value) {
+      return value.toLocaleString("kk-KZ") + " ₸";
+    }
+
+    function cacheElements() {
+      els.app = document.getElementById("app");
+      els.menuScreen = document.getElementById("menu-screen");
+      els.qrScreen = document.getElementById("qr-screen");
+      els.profileScreen = document.getElementById("profile-screen");
+      els.menuList = document.getElementById("menu-list");
+      els.cartItems = document.getElementById("cart-items");
+      els.emptyCart = document.getElementById("empty-cart");
+      els.totalCount = document.getElementById("total-count");
+      els.totalPrice = document.getElementById("total-price");
+      els.orderBtn = document.getElementById("order-btn");
+      els.cartMessage = document.getElementById("cart-message");
+      els.finalItems = document.getElementById("final-items");
+      els.finalTotal = document.getElementById("final-total");
+      els.orderId = document.getElementById("order-id");
+      els.backBtn = document.getElementById("back-btn");
+      els.appTitle = document.getElementById("app-title");
+      els.appSubtitle = document.getElementById("app-subtitle");
+      els.menuTitle = document.getElementById("menu-title");
+      els.cartTitle = document.getElementById("cart-title");
+      els.orderButtonText = document.getElementById("order-button-text");
+      els.qrTitle = document.getElementById("qr-title");
+      els.qrNote = document.getElementById("qr-note");
+      els.userTypeLabel = document.getElementById("user-type-label");
+      els.roleToggle = document.getElementById("role-toggle");
+      els.currentTime = document.getElementById("current-time");
+      els.currentDate = document.getElementById("current-date");
+      els.couponInput = document.getElementById("coupon-input");
+      els.applyCouponBtn = document.getElementById("apply-coupon-btn");
+      els.couponSection = document.getElementById("coupon-section");
+      els.couponText = document.getElementById("coupon-text");
+      els.removeCouponBtn = document.getElementById("remove-coupon");
+      els.subtotalPrice = document.getElementById("subtotal-price");
+      els.discountRow = document.getElementById("discount-row");
+      els.discountPercent = document.getElementById("discount-percent");
+      els.discountAmount = document.getElementById("discount-amount");
+      els.schoolName = document.getElementById("school-name");
+      els.profileBtn = document.getElementById("profile-btn");
+      els.profileBackBtn = document.getElementById("profile-back-btn");
+      els.profileName = document.getElementById("profile-name");
+      els.profileId = document.getElementById("profile-id");
+      els.balanceDisplay = document.getElementById("balance-display");
+      els.topupBtn = document.getElementById("topup-btn");
+      els.couponsList = document.getElementById("coupons-list");
+      els.noCouponsMsg = document.getElementById("no-coupons-msg");
+      els.ordersList = document.getElementById("orders-list");
+      els.noOrdersMsg = document.getElementById("no-orders-msg");
+    }
+
+    function updateDateTime() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      els.currentTime.textContent = hours + ":" + minutes;
+
+      const days = ["Дүйсенбі", "Сейсенбі", "Сәрсенбі", "Бейсенбі", "Жұма", "Сенбі", "Жексенбі"];
+      els.currentDate.textContent = days[now.getDay()];
+    }
+
+    function switchUserRole() {
+      state.userRole = state.userRole === "student" ? "teacher" : "student";
+      state.cart = {};
+      state.teacherComboSelections = {};
+      buildMenu();
+      renderCart();
+      updateUserLabel();
+    }
+
+    function updateUserLabel() {
+      if (state.userRole === "student") {
+        els.userTypeLabel.textContent = "Оқушыларға арналған";
+      } else {
+        els.userTypeLabel.textContent = "Мұғалімдерге арналған";
+      }
+    }
+
+    function toggleRole() {
+      switchUserRole();
+    }
+
+    function buildMenu() {
+      els.menuList.innerHTML = "";
+      const items = state.userRole === "student" ? menuItems : teacherMenuItems;
+
+      if (state.userRole === "student") {
+        items.forEach((item, index) => {
+          const card = document.createElement("article");
+          card.className = "rounded-[28px] p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-lg";
+          card.style.background = item.color;
+          card.style.animationDelay = (index * 0.08) + "s";
+          card.innerHTML = `
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="mb-3 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-3xl shadow-sm">${item.emoji}</div>
+                <h3 class="text-lg font-extrabold">${item.name}</h3>
+                <p class="mt-1 text-sm font-bold text-slate-700">${formatPrice(item.price)}</p>
+              </div>
+              <div class="rounded-2xl bg-white/70 px-3 py-2 text-xs font-extrabold text-slate-700">Танымал</div>
+            </div>
+            <div class="mt-4 flex items-center justify-between rounded-2xl bg-white/70 p-2">
+              <button class="focus-ring minus-btn flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white transition hover:bg-slate-700" data-id="${item.id}" aria-label="${item.name} санын азайту">
+                <i data-lucide="minus" class="h-4 w-4"></i>
+              </button>
+              <span id="qty-${item.id}" class="min-w-[32px] text-center text-xl font-extrabold">0</span>
+              <button class="focus-ring plus-btn flex h-11 w-11 items-center justify-center rounded-2xl bg-[#4ECDC4] text-white transition hover:brightness-95" data-id="${item.id}" aria-label="${item.name} санын көбейту">
+                <i data-lucide="plus" class="h-4 w-4"></i>
+              </button>
+            </div>
+          `;
+          els.menuList.appendChild(card);
+        });
+      } else {
+        items.forEach((combo, index) => {
+          const card = document.createElement("article");
+          card.className = "rounded-[28px] p-4 shadow-sm";
+          card.style.background = combo.color;
+          card.style.animationDelay = (index * 0.08) + "s";
+
+          const sidesHtml = combo.sides.map(side => `
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="side-${combo.id}" value="${side.id}" class="combo-side-select" data-combo-id="${combo.id}" data-item-id="${side.id}">
+              <span>${side.emoji} ${side.name}</span>
+            </label>
+          `).join("");
+
+          const drinksHtml = combo.drinks.map(drink => `
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="drink-${combo.id}" value="${drink.id}" class="combo-drink-select" data-combo-id="${combo.id}" data-item-id="${drink.id}">
+              <span>${drink.emoji} ${drink.name}</span>
+            </label>
+          `).join("");
+
+          card.innerHTML = `
+            <div class="flex items-start justify-between gap-3 mb-4">
+              <div>
+                <div class="mb-3 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-3xl shadow-sm">${combo.emoji}</div>
+                <h3 class="text-lg font-extrabold">${combo.name}</h3>
+                <p class="mt-1 text-sm font-bold text-slate-700">${formatPrice(combo.price)}</p>
+              </div>
+              <div class="rounded-2xl bg-white/70 px-3 py-2 text-xs font-extrabold text-slate-700">Ыстық ас</div>
+            </div>
+
+            <div class="space-y-4 rounded-2xl bg-white/60 p-3 mb-4">
+              <div>
+                <p class="text-xs font-bold text-slate-700 mb-2 uppercase">Негіздегі:</p>
+                <div class="text-sm font-bold">${combo.main.emoji} ${combo.main.name}</div>
+              </div>
+
+              <div>
+                <p class="text-xs font-bold text-slate-700 mb-2 uppercase">Қосымша таңдаңыз:</p>
+                <div class="space-y-2 text-sm">${sidesHtml}</div>
+              </div>
+
+              <div>
+                <p class="text-xs font-bold text-slate-700 mb-2 uppercase">Ішімдік таңдаңыз:</p>
+                <div class="space-y-2 text-sm">${drinksHtml}</div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between rounded-2xl bg-white/70 p-2">
+              <button class="focus-ring minus-btn flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white transition hover:bg-slate-700" data-id="${combo.id}" aria-label="${combo.name} санын азайту">
+                <i data-lucide="minus" class="h-4 w-4"></i>
+              </button>
+              <span id="qty-${combo.id}" class="min-w-[32px] text-center text-xl font-extrabold">0</span>
+              <button class="focus-ring plus-btn flex h-11 w-11 items-center justify-center rounded-2xl bg-[#4ECDC4] text-white transition hover:brightness-95" data-id="${combo.id}" aria-label="${combo.name} санын көбейту">
+                <i data-lucide="plus" class="h-4 w-4"></i>
+              </button>
+            </div>
+          `;
+          els.menuList.appendChild(card);
+        });
+      }
+
+      bindMenuButtons();
+      lucide.createIcons();
+    }
+
+    function bindMenuButtons() {
+      document.querySelectorAll(".plus-btn").forEach(btn => {
+        btn.addEventListener("click", () => updateQuantity(btn.dataset.id, 1));
+      });
+      document.querySelectorAll(".minus-btn").forEach(btn => {
+        btn.addEventListener("click", () => updateQuantity(btn.dataset.id, -1));
+      });
+
+      document.querySelectorAll(".combo-side-select").forEach(radio => {
+        radio.addEventListener("change", () => {
+          const comboId = radio.dataset.comboId;
+          if (!state.teacherComboSelections[comboId]) {
+            state.teacherComboSelections[comboId] = {};
+          }
+          state.teacherComboSelections[comboId].side = radio.value;
+          renderCart();
+        });
+      });
+
+      document.querySelectorAll(".combo-drink-select").forEach(radio => {
+        radio.addEventListener("change", () => {
+          const comboId = radio.dataset.comboId;
+          if (!state.teacherComboSelections[comboId]) {
+            state.teacherComboSelections[comboId] = {};
+          }
+          state.teacherComboSelections[comboId].drink = radio.value;
+          renderCart();
+        });
+      });
+    }
+
+    function updateQuantity(itemId, change) {
+      const current = state.cart[itemId] || 0;
+      const next = Math.max(0, current + change);
+      state.cart[itemId] = next;
+
+      if (next === 0) {
+        delete state.cart[itemId];
+      }
+
+      const qtyEl = document.getElementById("qty-" + itemId);
+      if (qtyEl) qtyEl.textContent = String(next);
+
+      renderCart();
+    }
+
+    function renderCart() {
+      els.cartItems.innerHTML = "";
+
+      let totalCount = 0;
+      let subtotalPrice = 0;
+
+      if (state.userRole === "student") {
+        const chosen = menuItems.filter(item => state.cart[item.id] > 0);
+
+        chosen.forEach(item => {
+          const qty = state.cart[item.id];
+          const sum = qty * item.price;
+          totalCount += qty;
+          subtotalPrice += sum;
+
+          const row = document.createElement("div");
+          row.className = "flex items-center justify-between rounded-2xl bg-white/10 px-4 py-3";
+          row.innerHTML = `
+            <div class="flex items-center gap-3">
+              <div class="text-2xl">${item.emoji}</div>
+              <div>
+                <p class="font-extrabold">${item.name}</p>
+                <p class="text-xs text-white/70">${qty} дана × ${formatPrice(item.price)}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="font-extrabold text-[#FFD166]">${formatPrice(sum)}</p>
+            </div>
+          `;
+          els.cartItems.appendChild(row);
+        });
+      } else {
+        const chosen = teacherMenuItems.filter(combo => state.cart[combo.id] > 0);
+
+        chosen.forEach(combo => {
+          const qty = state.cart[combo.id];
+          const selection = state.teacherComboSelections[combo.id] || {};
+
+          const sideId = selection.side;
+          const drinkId = selection.drink;
+          const side = combo.sides.find(s => s.id === sideId);
+          const drink = combo.drinks.find(d => d.id === drinkId);
+
+          const sum = qty * combo.price;
+          totalCount += qty;
+          subtotalPrice += sum;
+
+          const row = document.createElement("div");
+          row.className = "rounded-2xl bg-white/10 px-4 py-3 space-y-2";
+          row.innerHTML = `
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="text-2xl">${combo.emoji}</div>
+                <div>
+                  <p class="font-extrabold">${combo.name}</p>
+                  <p class="text-xs text-white/70">${qty} дана</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="font-extrabold text-[#FFD166]">${formatPrice(sum)}</p>
+              </div>
+            </div>
+            <div class="text-xs text-white/80 space-y-1 pl-12">
+              <div>${combo.main.emoji} ${combo.main.name}</div>
+              <div>${side ? side.emoji + " " + side.name : "⚠️ Қосымша таңдаңыз"}</div>
+              <div>${drink ? drink.emoji + " " + drink.name : "⚠️ Ішімдік таңдаңыз"}</div>
+            </div>
+          `;
+          els.cartItems.appendChild(row);
+        });
+      }
+
+      els.emptyCart.style.display = totalCount > 0 ? "none" : "block";
+      els.totalCount.textContent = totalCount;
+
+      let finalPrice = subtotalPrice;
+      els.subtotalPrice.textContent = formatPrice(subtotalPrice);
+
+      if (state.appliedCoupon) {
+        const coupon = coupons[state.appliedCoupon];
+        if (subtotalPrice >= coupon.minAmount) {
+          const discountValue = Math.floor(subtotalPrice * (coupon.discount / 100));
+          finalPrice = subtotalPrice - discountValue;
+
+          els.discountPercent.textContent = coupon.discount;
+          els.discountAmount.textContent = "-" + formatPrice(discountValue);
+          els.discountRow.classList.remove("hidden");
+
+          els.couponText.textContent = coupon.label + " - " + coupon.discount + "% ынамдылық";
+          els.couponSection.classList.remove("hidden");
+        } else {
+          state.appliedCoupon = null;
+          els.couponSection.classList.add("hidden");
+          els.discountRow.classList.add("hidden");
+        }
+      } else {
+        els.discountRow.classList.add("hidden");
+        els.couponSection.classList.add("hidden");
+      }
+
+      els.totalPrice.textContent = formatPrice(finalPrice);
+      els.orderBtn.disabled = totalCount === 0;
+      els.cartMessage.textContent = totalCount === 0 ? "Алдымен мәзірден тағам таңдаңыз" : "";
+    }
+
+    function showScreen(screen) {
+      els.menuScreen.classList.remove("active");
+      els.qrScreen.classList.remove("active");
+      els.profileScreen.classList.remove("active");
+      screen.classList.add("active");
+      lucide.createIcons();
+    }
+
+    function buildOrderSummary() {
+      els.finalItems.innerHTML = "";
+      let total = 0;
+
+      if (state.userRole === "student") {
+        menuItems.forEach(item => {
+          const qty = state.cart[item.id] || 0;
+          if (!qty) return;
+
+          const line = document.createElement("div");
+          const sum = qty * item.price;
+          total += sum;
+          line.className = "flex items-center justify-between rounded-2xl bg-white/70 px-3 py-2";
+          line.innerHTML = `
+            <span class="font-bold">${item.emoji} ${item.name} × ${qty}</span>
+            <span class="font-extrabold">${formatPrice(sum)}</span>
+          `;
+          els.finalItems.appendChild(line);
+        });
+      } else {
+        teacherMenuItems.forEach(combo => {
+          const qty = state.cart[combo.id] || 0;
+          if (!qty) return;
+
+          const sum = qty * combo.price;
+          total += sum;
+          const selection = state.teacherComboSelections[combo.id] || {};
+          const side = combo.sides.find(s => s.id === selection.side);
+          const drink = combo.drinks.find(d => d.id === selection.drink);
+
+          const line = document.createElement("div");
+          line.className = "rounded-2xl bg-white/70 px-3 py-2 space-y-1";
+          line.innerHTML = `
+            <div class="flex items-center justify-between font-bold">
+              <span>${combo.emoji} ${combo.name} × ${qty}</span>
+              <span class="font-extrabold">${formatPrice(sum)}</span>
+            </div>
+            <div class="text-xs text-slate-600 space-y-0.5">
+              <div>${combo.main.emoji} ${combo.main.name}</div>
+              <div>${side ? side.emoji + " " + side.name : "Қосымша танымайды"}</div>
+              <div>${drink ? drink.emoji + " " + drink.name : "Ішімдік танымайды"}</div>
+            </div>
+          `;
+          els.finalItems.appendChild(line);
+        });
+      }
+
+      els.finalTotal.textContent = formatPrice(total);
+    }
+
+    function placeOrder() {
+      const hasItems = Object.keys(state.cart).length > 0;
+      if (!hasItems) {
+        els.cartMessage.textContent = "Тапсырыс беру үшін алдымен тағам қосыңыз";
+        return;
+      }
+
+      state.orderCounter += 1;
+      els.orderId.textContent = "BRK-" + state.orderCounter;
+      buildOrderSummary();
+      showScreen(els.qrScreen);
+    }
+
+    function resetToMenu() {
+      showScreen(els.menuScreen);
+    }
+
+    function openProfile() {
+      els.profileName.textContent = state.studentName;
+      els.balanceDisplay.textContent = formatPrice(state.balance);
+      updateProfileCoupons();
+      updateProfileOrders();
+      showScreen(els.profileScreen);
+    }
+
+    function updateProfileCoupons() {
+      els.couponsList.innerHTML = "";
+      const defaultCoupons = [
+        { code: "GRADES500", label: "10% ынамдылық", desc: "Минимум 500 ₸" },
+        { code: "GRADES1000", label: "10% ынамдылық", desc: "Минимум 1000 ₸" }
+      ];
+
+      if (defaultCoupons.length === 0) {
+        els.noCouponsMsg.style.display = "block";
+      } else {
+        els.noCouponsMsg.style.display = "none";
+        defaultCoupons.forEach(coupon => {
+          const card = document.createElement("div");
+          card.className = "rounded-2xl bg-gradient-to-r from-[#FFF3B8] to-[#FFE0B2] p-4 text-slate-900";
+          card.innerHTML = `
+            <p class="text-xs font-bold text-slate-700 mb-1">${coupon.code}</p>
+            <p class="text-lg font-extrabold">${coupon.label}</p>
+            <p class="text-xs text-slate-600 mt-1">${coupon.desc}</p>
+          `;
+          els.couponsList.appendChild(card);
+        });
+      }
+    }
+
+    function updateProfileOrders() {
+      els.ordersList.innerHTML = "";
+      const sampleOrders = [
+        { id: "BRK-204", date: "2024-01-15 12:30", price: 2450, status: "Готово" },
+        { id: "BRK-203", date: "2024-01-14 11:45", price: 1850, status: "Готово" }
+      ];
+
+      if (sampleOrders.length === 0) {
+        els.noOrdersMsg.style.display = "block";
+      } else {
+        els.noOrdersMsg.style.display = "none";
+        sampleOrders.forEach(order => {
+          const card = document.createElement("div");
+          card.className = "rounded-2xl bg-slate-50 p-4 border border-slate-200";
+          card.innerHTML = `
+            <div class="flex items-center justify-between mb-2">
+              <p class="font-bold text-slate-900">Тапсырыс #${order.id}</p>
+              <span class="text-xs bg-[#4ECDC4] text-white px-2 py-1 rounded-full font-bold">${order.status}</span>
+            </div>
+            <p class="text-sm text-slate-600">${order.date}</p>
+            <p class="text-sm font-semibold text-slate-900 mt-2">${formatPrice(order.price)}</p>
+          `;
+          els.ordersList.appendChild(card);
+        });
+      }
+    }
+
+    function applyConfig(config) {
+      const current = Object.assign({}, defaultConfig, config || {});
+      document.body.style.background = `linear-gradient(180deg, ${current.background_color} 0%, ${current.background_color} 55%, #ffb703 100%)`;
+
+      els.app.style.color = current.text_color;
+      els.appTitle.textContent = current.app_title;
+      els.appSubtitle.textContent = current.app_subtitle;
+      els.menuTitle.textContent = current.menu_title;
+      els.cartTitle.textContent = current.cart_title;
+      els.orderButtonText.textContent = current.order_button_text;
+      els.qrTitle.textContent = current.qr_title;
+      els.qrNote.textContent = current.qr_note;
+
+      els.appTitle.style.fontFamily = `${current.font_family}, "Trebuchet MS", sans-serif`;
+      els.menuTitle.style.fontFamily = `${current.font_family}, "Trebuchet MS", sans-serif`;
+      els.cartTitle.style.fontFamily = `${current.font_family}, "Trebuchet MS", sans-serif`;
+      els.qrTitle.style.fontFamily = `${current.font_family}, "Trebuchet MS", sans-serif`;
+      els.appSubtitle.style.fontFamily = `${current.font_family}, "Trebuchet MS", sans-serif`;
+      els.qrNote.style.fontFamily = `${current.font_family}, "Trebuchet MS", sans-serif`;
+
+      els.appTitle.style.fontSize = `${current.font_size * 2}px`;
+      els.menuTitle.style.fontSize = `${current.font_size * 1.45}px`;
+      els.cartTitle.style.fontSize = `${current.font_size * 1.2}px`;
+      els.qrTitle.style.fontSize = `${current.font_size * 1.8}px`;
+      els.appSubtitle.style.fontSize = `${current.font_size}px`;
+      els.qrNote.style.fontSize = `${current.font_size}px`;
+      els.schoolName.style.fontSize = `${current.font_size * 1.1}px`;
+      els.profileName.style.fontSize = `${current.font_size * 1.8}px`;
+
+      els.orderBtn.style.backgroundColor = current.primary_action_color;
+      els.backBtn.style.backgroundColor = current.secondary_action_color;
+      els.orderBtn.style.color = current.surface_color;
+      els.backBtn.style.color = current.surface_color;
+    }
+
+    function initElementSdk() {
+      if (!window.elementSdk) {
+        applyConfig(defaultConfig);
+        return;
+      }
+
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (config) => {
+          applyConfig(config);
+        },
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => (config.background_color || defaultConfig.background_color),
+              set: (value) => {
+                config.background_color = value;
+                window.elementSdk.setConfig({ background_color: value });
+              }
+            },
+            {
+              get: () => (config.surface_color || defaultConfig.surface_color),
+              set: (value) => {
+                config.surface_color = value;
+                window.elementSdk.setConfig({ surface_color: value });
+              }
+            },
+            {
+              get: () => (config.text_color || defaultConfig.text_color),
+              set: (value) => {
+                config.text_color = value;
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            },
+            {
+              get: () => (config.primary_action_color || defaultConfig.primary_action_color),
+              set: (value) => {
+                config.primary_action_color = value;
+                window.elementSdk.setConfig({ primary_action_color: value });
+              }
+            },
+            {
+              get: () => (config.secondary_action_color || defaultConfig.secondary_action_color),
+              set: (value) => {
+                config.secondary_action_color = value;
+                window.elementSdk.setConfig({ secondary_action_color: value });
+              }
+            }
+          ],
+          borderables: [],
+          fontEditable: {
+            get: () => (config.font_family || defaultConfig.font_family),
+            set: (value) => {
+              config.font_family = value;
+              window.elementSdk.setConfig({ font_family: value });
+            }
+          },
+          fontSizeable: {
+            get: () => (config.font_size || defaultConfig.font_size),
+            set: (value) => {
+              config.font_size = value;
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ["app_title", config.app_title || defaultConfig.app_title],
+          ["app_subtitle", config.app_subtitle || defaultConfig.app_subtitle],
+          ["menu_title", config.menu_title || defaultConfig.menu_title],
+          ["cart_title", config.cart_title || defaultConfig.cart_title],
+          ["order_button_text", config.order_button_text || defaultConfig.order_button_text],
+          ["qr_title", config.qr_title || defaultConfig.qr_title],
+          ["qr_note", config.qr_note || defaultConfig.qr_note]
+        ])
+      });
+
+      applyConfig(window.elementSdk.config || defaultConfig);
+    }
+
+    function initApp() {
+      cacheElements();
+      updateDateTime();
+      setInterval(updateDateTime, 60000);
+      buildMenu();
+      renderCart();
+
+      els.orderBtn.addEventListener("click", placeOrder);
+      els.backBtn.addEventListener("click", resetToMenu);
+      els.profileBtn.addEventListener("click", openProfile);
+      els.profileBackBtn.addEventListener("click", resetToMenu);
+      els.roleToggle.addEventListener("click", switchUserRole);
+      els.applyCouponBtn.addEventListener("click", applyCoupon);
+      els.removeCouponBtn.addEventListener("click", removeCoupon);
+      els.couponInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") applyCoupon();
+      });
+
+      els.topupBtn.addEventListener("click", openTopupModal);
+      document.getElementById("topup-close-btn").addEventListener("click", closeTopupModal);
+      document.querySelectorAll(".topup-amount-btn").forEach(btn => {
+        btn.addEventListener("click", () => selectTopupAmount(btn.dataset.amount));
+      });
+      document.getElementById("confirm-topup-btn").addEventListener("click", confirmTopup);
+      
+      document.getElementById("card-number").addEventListener("input", formatCardNumber);
+      document.getElementById("card-expiry").addEventListener("input", formatExpiry);
+      document.getElementById("card-cvv").addEventListener("input", formatCVV);
+
+      document.getElementById("daily-spin-btn").addEventListener("click", openSpinWheel);
+      document.getElementById("spin-btn").addEventListener("click", spinWheel);
+      document.getElementById("close-modal-btn").addEventListener("click", closeSpinWheel);
+      document.getElementById("modal-close-btn").addEventListener("click", closeSpinWheel);
+      document.getElementById("copy-coupon-btn").addEventListener("click", copyCouponCode);
+
+      initDataSdk();
+      initElementSdk();
+      lucide.createIcons();
+    }
+
+    function initDataSdk() {
+      if (!window.dataSdk) {
+        console.log("Data SDK not available");
+        return;
+      }
+
+      const dataHandler = {
+        onDataChanged(data) {
+          if (data && data.length > 0) {
+            const todaySpins = data.filter(record => {
+              const recordDate = new Date(record.spinDate).toDateString();
+              const today = new Date().toDateString();
+              return recordDate === today && record.userId === state.userId;
+            });
+
+            if (todaySpins.length > 0) {
+              state.lastSpinDate = new Date().toDateString();
+              document.getElementById("spin-btn").disabled = true;
+              document.getElementById("spin-cooldown").classList.remove("hidden");
+            }
+          }
+        }
+      };
+
+      window.dataSdk.init(dataHandler);
+      checkTodaySpin();
+    }
+
+    async function checkTodaySpin() {
+      if (!window.dataSdk) return;
+
+      try {
+        const allRecords = await getAllSpinRecords();
+        const todaySpins = allRecords.filter(record => {
+          const recordDate = new Date(record.spinDate).toDateString();
+          const today = new Date().toDateString();
+          return recordDate === today && record.userId === state.userId;
+        });
+
+        if (todaySpins.length > 0) {
+          state.lastSpinDate = new Date().toDateString();
+          document.getElementById("spin-btn").disabled = true;
+          document.getElementById("spin-cooldown").classList.remove("hidden");
+        }
+      } catch (e) {
+        console.error("Error checking spins:", e);
+      }
+    }
+
+    async function getAllSpinRecords() {
+      if (!window.dataSdk) return [];
+      return [];
+    }
+
+    function openSpinWheel() {
+      document.getElementById("spin-wheel-modal").classList.add("active");
+      document.getElementById("spin-result").classList.add("hidden");
+      document.getElementById("spin-button-container").classList.remove("hidden");
+    }
+
+    function closeSpinWheel() {
+      document.getElementById("spin-wheel-modal").classList.remove("active");
+    }
+
+    async function spinWheel() {
+      const wheel = document.getElementById("wheel");
+      const spinBtn = document.getElementById("spin-btn");
+
+      spinBtn.disabled = true;
+
+      const spins = 2 + Math.random() * 3;
+      const randomDegree = Math.random() * 360;
+      const totalDegrees = spins * 360 + randomDegree;
+
+      wheel.style.transition = "none";
+      wheel.style.transform = `rotate(0deg)`;
+      
+      void wheel.offsetWidth;
+      
+      wheel.style.transition = "transform 3s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+      wheel.style.transform = `rotate(${totalDegrees}deg)`;
+
+      await new Promise(resolve => setTimeout(resolve, 3100));
+
+      const segmentIndex = Math.floor(randomDegree / 60) % 6;
+      const winnerData = state.wheelSpinData[segmentIndex];
+
+      const couponCode = generateCouponCode(winnerData.discount);
+
+      await saveCouponWin(couponCode, winnerData.discount);
+
+      showSpinResult(winnerData, couponCode);
+
+      spinBtn.disabled = true;
+      document.getElementById("spin-cooldown").classList.remove("hidden");
+      document.getElementById("spin-button-container").classList.add("hidden");
+    }
+
+    function generateCouponCode(discount) {
+      const prefix = discount > 0 ? "SPIN" + Math.floor(discount) : "SPINFLAT";
+      const suffix = Math.random().toString(36).substring(2, 7).toUpperCase();
+      return prefix + suffix;
+    }
+
+    async function saveCouponWin(code, discount) {
+      if (!window.dataSdk) return;
+
+      const record = {
+        id: "spin-" + Date.now() + "-" + Math.random().toString(36).substr(2, 9),
+        userId: state.userId,
+        spinDate: new Date().toISOString(),
+        wonCoupon: code,
+        discountPercent: discount
+      };
+
+      const result = await window.dataSdk.create(record);
+      if (result.isOk) {
+        console.log("Spin result saved:", code);
+      } else {
+        console.error("Failed to save spin result:", result.error);
+      }
+    }
+
+    function showSpinResult(winnerData, couponCode) {
+      const resultDiv = document.getElementById("spin-result");
+      const resultText = document.getElementById("result-text");
+      const couponCodeBox = document.getElementById("coupon-code-box");
+      const couponCodeEl = document.getElementById("coupon-code");
+
+      resultText.textContent = "🎉 " + winnerData.label + "!";
+      couponCodeEl.textContent = couponCode;
+      couponCodeBox.classList.remove("hidden");
+      resultDiv.classList.remove("hidden");
+    }
+
+    function copyCouponCode() {
+      const code = document.getElementById("coupon-code").textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById("copy-coupon-btn");
+        const originalText = btn.textContent;
+        btn.textContent = "✓ Көшірілді!";
+        setTimeout(() => {
+          btn.textContent = originalText;
+        }, 2000);
+      });
+    }
+
+    function applyCoupon() {
+      const code = els.couponInput.value.trim().toUpperCase();
+      if (!code) {
+        els.cartMessage.textContent = "Купон кодын енгізіңіз";
+        return;
+      }
+
+      if (!coupons[code]) {
+        els.cartMessage.textContent = "Бұл купон коды дұрыс емес";
+        return;
+      }
+
+      state.appliedCoupon = code;
+      els.couponInput.value = "";
+      els.cartMessage.textContent = "";
+      renderCart();
+    }
+
+    function removeCoupon() {
+      state.appliedCoupon = null;
+      els.couponInput.value = "";
+      renderCart();
+    }
+
+    function openTopupModal() {
+      document.getElementById("topup-modal").classList.add("active");
+      document.getElementById("custom-amount").value = "";
+      document.getElementById("card-number").value = "";
+      document.getElementById("card-expiry").value = "";
+      document.getElementById("card-cvv").value = "";
+      document.getElementById("card-name").value = "";
+      document.getElementById("topup-message").textContent = "";
+    }
+
+    function closeTopupModal() {
+      document.getElementById("topup-modal").classList.remove("active");
+    }
+
+    function selectTopupAmount(amount) {
+      document.getElementById("custom-amount").value = amount;
+    }
+
+    function formatCardNumber(e) {
+      let value = e.target.value.replace(/\D/g, "");
+      let formatted = "";
+      for (let i = 0; i < value.length; i++) {
+        if (i > 0 && i % 4 === 0) formatted += " ";
+        formatted += value[i];
+      }
+      e.target.value = formatted.substring(0, 19);
+    }
+
+    function formatExpiry(e) {
+      let value = e.target.value.replace(/\D/g, "");
+      if (value.length >= 2) {
+        value = value.substring(0, 2) + "/" + value.substring(2, 4);
+      }
+      e.target.value = value;
+    }
+
+    function formatCVV(e) {
+      e.target.value = e.target.value.replace(/\D/g, "").substring(0, 3);
+    }
+
+    function confirmTopup() {
+      const amount = parseInt(document.getElementById("custom-amount").value) || 0;
+      const cardNumber = document.getElementById("card-number").value.replace(/\s/g, "");
+      const expiry = document.getElementById("card-expiry").value;
+      const cvv = document.getElementById("card-cvv").value;
+      const cardName = document.getElementById("card-name").value.toUpperCase();
+
+      const messageEl = document.getElementById("topup-message");
+
+      if (amount <= 0) {
+        messageEl.textContent = "Дұрыс сумма енгізіңіз";
+        messageEl.style.color = "#FF7B54";
+        return;
+      }
+
+      if (cardNumber.length !== 16) {
+        messageEl.textContent = "Карта нөмері дұрыс емес";
+        messageEl.style.color = "#FF7B54";
+        return;
+      }
+
+      if (!expiry.match(/^\d{2}\/\d{2}$/)) {
+        messageEl.textContent = "Ақ. салғанын дұрыс емес (MM/YY)";
+        messageEl.style.color = "#FF7B54";
+        return;
+      }
+
+      if (cvv.length !== 3) {
+        messageEl.textContent = "CVV дұрыс емес";
+        messageEl.style.color = "#FF7B54";
+        return;
+      }
+
+      if (!cardName.trim()) {
+        messageEl.textContent = "Аты-жөнін енгізіңіз";
+        messageEl.style.color = "#FF7B54";
+        return;
+      }
+
+      state.balance += amount;
+      els.balanceDisplay.textContent = formatPrice(state.balance);
+
+      messageEl.textContent = "✓ Толықтау сәтті орындалды!";
+      messageEl.style.color = "#4ECDC4";
+
+      setTimeout(() => {
+        closeTopupModal();
+      }, 1500);
+    }
+
+    initApp();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e2d37ed77d3e4c3',t:'MTc3NDYwMjE3MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
